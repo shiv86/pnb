@@ -1,0 +1,19 @@
+spring:
+    jpa:
+        database: POSTGRESQL
+        openInView: false
+        show_sql: true
+        generate-ddl: true
+        hibernate:
+            hbm2ddl:
+                ddl-auto: "update"
+            naming-strategy: org.hibernate.cfg.EJB3NamingStrategy
+        properties:
+            hibernate.generate_statistics: true
+
+    data:
+       postgres:
+         dataSourceClassName: org.postgresql.ds.PGSimpleDataSource
+         uri: jdbc:postgresql://localhost:5432/earnings
+         user: bracqetsql
+         pass: test                 

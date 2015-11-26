@@ -1,13 +1,33 @@
 package com.pnb.repo.jpa;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import com.pnb.domain.jpa.Earnings;
+import com.pnb.domain.jpa.Earning;
 
-public interface EarningsRepo extends JpaRepository<Earnings, Long> {
+public interface EarningsRepo extends JpaRepository<Earning, Long> {
+
+    Earning findBySymbolAndDate(String symbol, LocalDate date);
+
+    List<Earning> findBySymbolOrderByDateDesc(String symbol);
+
+    @Query("SELECT DISTINCT(e.symbol) FROM Earning e")
+    List<String> getAllUniqueSymbol();
+
+    @Query(value = "SELECT DISTINCT(symbol) FROM earning WHERE symbol not like '%.%'", nativeQuery = true)
+    List<String> getAllUSSymbol();
+
+    @Query(value = "SELECT * FROM earning WHERE symbol = :sym AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL ORDER BY earnings_date ASC", nativeQuery = true)
+    List<Earning> getSymbolEarningWherePopulated(@Param("sym") String sym);
     
-    Earnings findBySymbolAndDate(String symbol,LocalDate date);
+    @Query(value = "SELECT * FROM earning WHERE symbol = ?1 AND earnings_date < date(?2) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%' ORDER BY earnings_date ASC", nativeQuery = true)
+    List<Earning> getHistoricalPopulateEarnings(String sym, String earnDate);
+
+    @Query(value = "SELECT * FROM earning WHERE earnings_date = date(?1) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%'", nativeQuery = true)
+    List<Earning> findByDateAndConsensusEPSNotNull(String date);
 
 }

@@ -14,9 +14,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 
-@Table(name="earnings", indexes = { @Index( name="earnings_idx", columnList="symbol,earnings_date" ) } )
+@Table(name="earning", indexes = { @Index( name="earnings_idx", columnList="symbol,earnings_date" ) } )
 @Entity
-public class Earnings extends BaseEntity {
+public class Earning extends BaseEntity {
     
     @Id
     @SequenceGenerator(name="earnings_id_seq",
@@ -53,10 +53,26 @@ public class Earnings extends BaseEntity {
     @Column(name = "error")
     private String errors;
     
-    public Earnings(){
+    private final static String EARNINGS_ANNCMT_URL = "http://biz.yahoo.com/research/earncal/";
+    private final static String EARNINGS_SURPRISE_URL = "http://biz.yahoo.com/z/";
+    
+    public Earning(){
     }
     
-     public Earnings(String companyName, String symbol, ANNCMT_TIME annoucementTime, String rawAnnouncementTime, LocalDate date) {
+    public enum EARNINGS_TYPE {
+        ANNCMT(EARNINGS_ANNCMT_URL), EPS(EARNINGS_SURPRISE_URL);
+        private String url;
+
+        EARNINGS_TYPE(String url) {
+            this.url = url;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+    }
+    
+     public Earning(String companyName, String symbol, ANNCMT_TIME annoucementTime, String rawAnnouncementTime, LocalDate date) {
         this.companyName = companyName;
         this.symbol = symbol;
         this.annoucementTime = annoucementTime;
@@ -98,6 +114,18 @@ public class Earnings extends BaseEntity {
     public void setSurprisePercentage(Double surprisePercentage) {
         this.surprisePercentage = surprisePercentage;
     }
+    
+    //Usually required when consensus == 0 
+    public void setManuallyCalculatedPercentage(){
+        if (this.getSurprisePercentage() == null && (this.getReportedEPS() != null && this.getConsensusEPS() != null)) {
+            double difference = this.getReportedEPS() - this.getConsensusEPS();
+            double suprisePct = (difference / this.getConsensusEPS()) * 100;
+            if (this.getConsensusEPS() == 0) {
+                suprisePct = difference * 100;
+            }
+            this.setSurprisePercentage(suprisePct);
+        }
+    }
 
 
     public void setReportedEPS(Double reportedEPS) {
@@ -126,7 +154,7 @@ public class Earnings extends BaseEntity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Earnings other = (Earnings) obj;
+        Earning other = (Earning) obj;
         if (symbol == null) {
             if (other.symbol != null)
                 return false;
@@ -146,7 +174,7 @@ public class Earnings extends BaseEntity {
     }
 
 
-    public ANNCMT_TIME getAnnoucementTime() {
+    public ANNCMT_TIME getAnncmtTime() {
         return annoucementTime;
     }
 
@@ -178,7 +206,7 @@ public class Earnings extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Earnings [companyName=" + companyName + ", symbol=" + symbol + ", annoucementTime=" + annoucementTime + ", surprisePercentage="
+        return "Earning [companyName=" + companyName + ", symbol=" + symbol + ", annoucementTime=" + annoucementTime + ", surprisePercentage="
                 + surprisePercentage + ", reportedEPS=" + reportedEPS + ", consensusEPS=" + consensusEPS + ", date=" + date + ", quarter="
                 + quarter + "]";
     }

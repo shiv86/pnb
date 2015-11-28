@@ -16,10 +16,19 @@ public abstract class YahooTask extends Task {
 
     protected TaskMetaData buildErrorMeta(String taskName, EARNINGS_TYPE earningsType, Document earningDoc, LocalDate taskDate, String eMessage) {
         StringBuffer sb = new StringBuffer();
-        
+
         if (StringUtil.isBlank(sb.toString())) {
-            sb.append("Something went wrong for this date please check logs or debug:" + YahooUtil.getYahooURL(earningsType, taskDate));
+            sb.append("Error for :" + YahooUtil.getYahooURL(earningsType, taskDate));
         }
+
+        if (!StringUtil.isBlank(eMessage)) {
+            if (eMessage.length() > 150) {
+                sb.append(eMessage.substring(0, 150));
+            } else {
+                sb.append(eMessage);
+            }
+        }
+
         return new TaskMetaData(taskDate, taskName, TASK_TYPE.DATA_LOAD, earningsType.toString(), STATUS.ERROR, sb.toString());
     }
 }

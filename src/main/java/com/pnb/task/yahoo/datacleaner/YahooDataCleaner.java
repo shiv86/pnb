@@ -1,4 +1,4 @@
-package com.pnb.task.yahoo;
+package com.pnb.task.yahoo.datacleaner;
 
 import com.pnb.task.Task;
 

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.pnb.domain.jpa.Earning;
+import com.pnb.domain.jpa.Earning.ANNCMT_TIME;
 
 public interface EarningsRepo extends JpaRepository<Earning, Long> {
 
@@ -29,5 +30,18 @@ public interface EarningsRepo extends JpaRepository<Earning, Long> {
 
     @Query(value = "SELECT * FROM earning WHERE earnings_date = date(?1) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%'", nativeQuery = true)
     List<Earning> findByDateAndConsensusEPSNotNull(String date);
+    
+    /*
+     * Note earningRepo is used to determine the lastEarningsTaskRun 
+     */
+    @Query(value = "SELECT MAX(earnings_date) from earning where earnings_eps_populated = 't'", nativeQuery = true)
+    LocalDate getLastEarningsTaskRunDate();
+    
+    @Query(value = "select distinct(anncmt_time) from earning where symbol = ?1 and anncmt_time != 'NOT_SUPPLIED'", nativeQuery = true)
+    List<ANNCMT_TIME> getAllDistinctAnncmt(String symbol);
+    
+    @Query(value = "select count(*) from earning where symbol = ?1 and anncmt_time = ?2", nativeQuery = true)
+    int getAnncmtCountForSymbol(String symbol,String anncmtTime);
+    
 
 }

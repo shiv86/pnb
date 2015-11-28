@@ -1,8 +1,7 @@
-package com.pnb.task.yahoo;
+package com.pnb.algo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,16 +9,15 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.pnb.algo.EarningRank;
 import com.pnb.algo.EarningRank.CONSENSUS_REVISION;
 import com.pnb.algo.EarningRank.QUAD;
-import com.pnb.algo.EarningRankAlgo;
 import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.repo.jpa.EarningsRepo;
+import com.pnb.task.Task;
 
 @Component
-public class EarningsRevisionGame extends YahooDataCleaner {
+public class EarningsRevisionGame extends Task {
 
     private static final String EARNINGS_REVISION_GAME = "EARNINGS_REVISION_GAME";
 
@@ -77,12 +75,12 @@ public class EarningsRevisionGame extends YahooDataCleaner {
 
                             }
 
-                            if (surpriseIndex.signum() == 1 && Math.signum(earningAnnouncement.getReportedEPS()) == 1) {
+                            if (surpriseIndex.signum() == 1 && Math.signum(earningAnnouncement.getSurprisePercentage()) == 1) {
 
                                 switch (earnRank.quad) {
                                     case QPRPS:
                                         quadOne.put(earningAnnouncement.getSymbol() + "|" + earningAnnouncement.getDate().toString(),
-                                                surpriseIndex.toString() + "|" + earningAnnouncement.getReportedEPS().toString());
+                                                surpriseIndex.toString() + "|" + earningAnnouncement.getSurprisePercentage().toString());
                                         q1.totalSuccessFullPrediction++;
                                         break;
                                     case QPRNS:
@@ -97,7 +95,7 @@ public class EarningsRevisionGame extends YahooDataCleaner {
                                 success++;
                             }
 
-                            if (surpriseIndex.signum() == -1 && Math.signum(earningAnnouncement.getReportedEPS()) == -1) {
+                            if (surpriseIndex.signum() == -1 && Math.signum(earningAnnouncement.getSurprisePercentage()) == -1) {
 
                                 switch (earnRank.quad) {
                                     case QNRNS:
@@ -126,6 +124,7 @@ public class EarningsRevisionGame extends YahooDataCleaner {
         }
 
         System.out.println("Out of " + totalPrediction + " predictions, " + success + " were successfull");
+        System.out.println("Out of q1.totalNumQuadPrediction" + q1.totalNumQuadPrediction + " predictions, " + q1.totalSuccessFullPrediction + " were successfull");
         quadOne.keySet().forEach( x-> { System.out.println(x+"|"+quadOne.get(x));});
 
         return null;

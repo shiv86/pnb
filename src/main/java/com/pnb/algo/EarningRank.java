@@ -13,7 +13,7 @@ public class EarningRank {
     public int totalEarningCount = 0;
     public QUAD quad = QUAD.BELOW_THRESHOLD;
 
-    public BigDecimal THRESHOLD = BigDecimal.valueOf(0.55);
+    public BigDecimal THRESHOLD = BigDecimal.valueOf(0.85);
     
     public enum QUAD {
         QPRPS, QPRNS, QNRPS, QNRNS, BELOW_THRESHOLD

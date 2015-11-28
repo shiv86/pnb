@@ -1,4 +1,4 @@
-package com.pnb.task.yahoo;
+package com.pnb.task.yahoo.datacleaner;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
 import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
+import com.pnb.repo.jpa.EarningsRepo;
 import com.pnb.task.Task;
 
 @Component
@@ -26,14 +27,22 @@ public class YahooParentDataLoadTask extends Task {
 
     @Autowired
     private YahooEarningsTask yahooEarningTask;
+    
+    @Autowired
+    private EarningsRepo earnRepo;
 
     private LocalDate actualStartDate = null;
 
     @Override
     public TaskMetaData process() {
         tasks.add(yahooAnncmtTask);
-        tasks.add(yahooEarningTask);
+       // tasks.add(yahooEarningTask);
         List<TaskMetaData> metaDataResult = new ArrayList<TaskMetaData>();
+        LocalDate lastEarningsTaskDate = earnRepo.getLastEarningsTaskRunDate();
+        //taskDate = lastEarningsTaskDate.plusDays(1);
+        taskDate = LocalDate.of(2014, 07, 31);
+        //taskEndDate = taskDate.plusDays(10);
+        taskEndDate = LocalDate.of(2014, 07, 31);
         actualStartDate = taskDate;
         while (!taskDate.isAfter((taskEndDate))) {
             for (Task task : tasks) {

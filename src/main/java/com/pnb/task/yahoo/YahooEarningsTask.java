@@ -35,7 +35,7 @@ public class YahooEarningsTask extends YahooTask {
         earningAnncmt = new ArrayList<Earning>();
         try {
             
-            if (taskDate.equals((LocalDate.now()))) {
+            if (taskDate.isAfter((LocalDate.now())) || taskDate.isEqual((LocalDate.now()))) {
                return new TaskMetaData(taskDate, YAHOO_EARNINGS, TASK_TYPE.DATA_LOAD, EARNINGS_TYPE.EPS.toString(), STATUS.COMPLETED, "CANNOT_PROCESS_FUTURE_TASK_DATE");
             }
             earningsEPS = YahooUtil.getDocument(taskDate, EARNINGS_TYPE.EPS);

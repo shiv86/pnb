@@ -49,11 +49,27 @@ public class YahooAnncmtTask extends YahooTask {
                      <tr bgcolor="a0b8c8">
                       <td colspan="4"> <b>Earning Announcements for Thursday, January 28</b></td>
                      </tr>
+                     ------------
+                     For previous announcement dates there is no EPS
+                     
                      <tr bgcolor="dcdcdc">
                       <td><font face="arial" size="-1"><b>Company</b></font></td>
                       <td><font face="arial" size="-1"><b>Symbol</b></font></td>
                       <td align="center"><font face="arial" size="-1"><b>Time</b></font></td>
                       <td align="center"><font face="arial" size="-1"><b>Conference<br />Call</b></font></td>
+                     -------
+                    For todays OR future announcement dates there is EPS  however the Conference Column may not be present.
+                     
+                      <tr bgcolor="dcdcdc">
+                          <td><font face="arial" size="-1"><b>Company</b></font></td>
+                          <td><font face="arial" size="-1"><b>Symbol</b></font></td>
+                          <td align="center"><font face="arial" size="-1"><b>EPS<br />Estimate*</b></font></td>
+                          <td align="center"><font face="arial" size="-1"><b>Time</b></font></td>
+                          <td align="center"><font face="arial" size="-1"><b>Add to My<br />Calendar</b></font></td>
+                          <td align="center"><font face="arial" size="-1"><b>Conference<br />Call</b></font></td>
+                     </tr>
+                      
+                      --------  
                      </tr>
                      <tr>
                       <td>1-800-FLOWERS.COM</td>
@@ -83,12 +99,21 @@ public class YahooAnncmtTask extends YahooTask {
                         int companyInt = 0;
                         int symbolInt = 1;
                         int anncmtTimeInt = 2;
-                        if (tds.size() == 6) {
+                        String consensusString = "";
+                        if (tds.size() >= 5) {
+                            /* consensus numbers only exist for today or future announcements */
+                            int consensusIndex = 2;
+                            consensusString = tds.get(consensusIndex).text().trim();
                             anncmtTimeInt = 3;
                         }
 
+                        String symbol = tds.get(symbolInt).text();
+                        String company = tds.get(companyInt).text();
                         String rawAnncmtTime = tds.get(anncmtTimeInt).text().trim();
+                        checkRawAnncmtTimeIsValid(rawAnncmtTime,company);
+
                         ANNCMT_TIME anncmtTime = null;
+
 
                         switch (rawAnncmtTime) {
                             case BEFORE_MARKET_OPEN:
@@ -98,7 +123,22 @@ public class YahooAnncmtTask extends YahooTask {
                                 anncmtTime = ANNCMT_TIME.AFTER_CLOSE;
                                 break;
                             case TIME_NOT_SUPPLIED:
-                                anncmtTime = ANNCMT_TIME.NOT_SUPPLIED;
+                                /*
+                                 * if (!symbol.contains(".")) {
+                                 * List<ANNCMT_TIME> allDistinctAnncmt = earnRepo.getAllDistinctAnncmt(symbol);
+                                 * if (allDistinctAnncmt != null && allDistinctAnncmt.size() == 1) {
+                                 * int totalHistAnncmtTimeCount = earnRepo.getAnncmtCountForSymbol(symbol,
+                                 * allDistinctAnncmt.get(0).toString());
+                                 * if (totalHistAnncmtTimeCount > 5) {
+                                 * anncmtTime = allDistinctAnncmt.get(0);
+                                 * }
+                                 * }
+                                 * }
+                                 */
+
+                                if (anncmtTime == null) {
+                                    anncmtTime = ANNCMT_TIME.NOT_SUPPLIED;
+                                }
                                 break;
                             default:
                                 try {
@@ -119,8 +159,11 @@ public class YahooAnncmtTask extends YahooTask {
                                 }
                         }
 
-                        Earning earning = new Earning(tds.get(companyInt).text(), tds.get(symbolInt).text(), anncmtTime, rawAnncmtTime, taskDate);
+                        Earning earning = new Earning(company, tds.get(symbolInt).text(), anncmtTime, rawAnncmtTime, taskDate);
                         earning.setEarningsAnnoucementPopulated(true);
+                        if (!StringUtil.isBlank(consensusString) && YahooUtil.isNumeric(consensusString)) {
+                            earning.setConsensusEPS(Double.valueOf(consensusString));
+                        }
 
                         if (!StringUtils.isEmpty(earning.getSymbol())) {
                             earningAnncmt.add(earning);
@@ -132,8 +175,9 @@ public class YahooAnncmtTask extends YahooTask {
             earnRepo.save(earningAnncmt);
         } catch (Exception e) {
             String eMessage = e.getMessage();
+            System.err.println(eMessage);
             if (StringUtil.isBlank(eMessage) || YahooUtil.shouldRecordError(taskDate, eMessage)) {
-                return buildErrorMeta(YAHOO_ANNCMT, EARNINGS_TYPE.ANNCMT, earningDoc,taskDate, eMessage);
+                return buildErrorMeta(YAHOO_ANNCMT, EARNINGS_TYPE.ANNCMT, earningDoc, taskDate, eMessage);
             }
         }
 
@@ -141,16 +185,34 @@ public class YahooAnncmtTask extends YahooTask {
         return new TaskMetaData(taskDate, YAHOO_ANNCMT, TASK_TYPE.DATA_LOAD, EARNINGS_TYPE.ANNCMT.toString(), STATUS.COMPLETED, message);
     }
 
+    private void checkRawAnncmtTimeIsValid(String rawAnncmtTime, String company) throws Exception {
+        String lowerCaseAnncmtTime = rawAnncmtTime.toLowerCase();
+        if (!lowerCaseAnncmtTime.contains("after") && !lowerCaseAnncmtTime.contains("before") && !lowerCaseAnncmtTime.contains("time")
+                && !lowerCaseAnncmtTime.contains("am") && !lowerCaseAnncmtTime.contains("pm") && !StringUtil.isBlank(rawAnncmtTime)) {
+            throw new Exception(" Announcement Time Error, Company:" + company +" Date:" + taskDate.toString() + " rawAnncmtTime:"
+                    + rawAnncmtTime);
+        }
+    }
+
     private List<Earning> getEarningsToSave(List<Earning> parsedEarnings) {
         List<Earning> earningsToSave = new ArrayList<Earning>();
         for (Earning parsedEarning : parsedEarnings) {
             Earning existingEarning = earnRepo.findBySymbolAndDate(parsedEarning.getSymbol(), parsedEarning.getDate());
             if (existingEarning != null) {
+                boolean updateExistingEarning = false;
                 if (updateAnncmt(parsedEarning, existingEarning)) {
                     existingEarning.setAnnoucementTime(parsedEarning.getAnncmtTime());
                     existingEarning.setEarningsAnnoucementPopulated(true);
+                    updateExistingEarning = true;
+                }
+                if (existingEarning.getConsensusEPS() == null && parsedEarning.getConsensusEPS() != null) {
+                    existingEarning.setConsensusEPS(parsedEarning.getConsensusEPS());
+                    updateExistingEarning = true;
+                }
+                if (updateExistingEarning) {
                     earningsToSave.add(existingEarning);
                 }
+
             } else {
                 earningsToSave.add(parsedEarning);
             }
@@ -159,6 +221,7 @@ public class YahooAnncmtTask extends YahooTask {
     }
 
     private boolean updateAnncmt(Earning parsedEarning, Earning existingEarning) {
-        return !ANNCMT_TIME.NOT_SUPPLIED.equals(parsedEarning.getAnncmtTime()) && ANNCMT_TIME.NOT_SUPPLIED.equals(existingEarning.getAnncmtTime());
+        return (!ANNCMT_TIME.NOT_SUPPLIED.equals(parsedEarning.getAnncmtTime()) && ANNCMT_TIME.NOT_SUPPLIED
+                .equals(existingEarning.getAnncmtTime()));
     }
 }

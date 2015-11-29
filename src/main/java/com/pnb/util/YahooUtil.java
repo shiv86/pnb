@@ -69,7 +69,7 @@ public class YahooUtil {
         return false;
     }
 
-    private static boolean isWeekend(LocalDate localDate) {
+    public static boolean isWeekend(LocalDate localDate) {
         return localDate.getDayOfWeek().getValue() > 5;
     }
 

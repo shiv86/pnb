@@ -1,4 +1,4 @@
-package com.pnb.algo;
+package com.pnb.algo.earnings;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,7 +14,7 @@ public class EarningRank {
     public QUAD quad = QUAD.BELOW_THRESHOLD;
 
     public BigDecimal THRESHOLD = BigDecimal.valueOf(0.85);
-    
+
     public enum QUAD {
         QPRPS, QPRNS, QNRPS, QNRNS, BELOW_THRESHOLD
     }
@@ -29,34 +29,36 @@ public class EarningRank {
      * +ive values inficating the provability of +ive surprise %
      */
 
-    public BigDecimal getSurpriseIndex(BigDecimal consensus, CONSENSUS_REVISION revision) {
+    public BigDecimal getSurpriseIndex(CONSENSUS_REVISION revision) {
 
         BigDecimal surpriseIndex = BigDecimal.ZERO;
 
         switch (revision) {
             case POSITIVE:
                 if (totalPostiveRevision > 5) {
-                    BigDecimal probPositiveSurprise = bd(totalPostiveScore).divide(bd(totalPostiveRevision),2, RoundingMode.HALF_UP);
-                    BigDecimal probNegativeSurprise = bd(totalPostiveRevision - totalPostiveScore).divide(bd(totalPostiveRevision),2, RoundingMode.HALF_UP);
+                    BigDecimal probPositiveSurprise = bd(totalPostiveScore).divide(bd(totalPostiveRevision), 2, RoundingMode.HALF_UP);
+                    BigDecimal probNegativeSurprise =
+                            bd(totalPostiveRevision - totalPostiveScore).divide(bd(totalPostiveRevision), 2, RoundingMode.HALF_UP);
 
                     if (probPositiveSurprise.compareTo(THRESHOLD) == 1) {
                         surpriseIndex = probPositiveSurprise;
                         this.quad = QUAD.QPRPS;
-                        
+
                     } else if (probNegativeSurprise.compareTo(THRESHOLD) == 1) {
-                        surpriseIndex = probNegativeSurprise;
+                        surpriseIndex = probNegativeSurprise.multiply(bd(-1));
                         this.quad = QUAD.QPRNS;
-                        
+
                     }
                 }
                 break;
             case NEGATIVE:
-                if(totalNegativeRevision > 4){
-                    
-                    BigDecimal probNegativeSurprise = bd(totalNegativeScore).divide(bd(totalNegativeRevision),2, RoundingMode.HALF_UP);
-                    BigDecimal probPositiveSurprise = bd(totalNegativeRevision - totalNegativeScore).divide(bd(totalNegativeRevision),2, RoundingMode.HALF_UP);
+                if (totalNegativeRevision > 4) {
+
+                    BigDecimal probNegativeSurprise = bd(totalNegativeScore).divide(bd(totalNegativeRevision), 2, RoundingMode.HALF_UP);
+                    BigDecimal probPositiveSurprise =
+                            bd(totalNegativeRevision - totalNegativeScore).divide(bd(totalNegativeRevision), 2, RoundingMode.HALF_UP);
                     if (probPositiveSurprise.compareTo(THRESHOLD) == 1) {
-                        surpriseIndex = probPositiveSurprise.multiply(bd(-1));
+                        surpriseIndex = probPositiveSurprise;
                         this.quad = QUAD.QNRPS;
                     } else if (probNegativeSurprise.compareTo(THRESHOLD) == 1) {
                         this.quad = QUAD.QNRNS;

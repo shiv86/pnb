@@ -31,4 +31,5 @@ public abstract class YahooTask extends Task {
 
         return new TaskMetaData(taskDate, taskName, TASK_TYPE.DATA_LOAD, earningsType.toString(), STATUS.ERROR, sb.toString());
     }
+
 }

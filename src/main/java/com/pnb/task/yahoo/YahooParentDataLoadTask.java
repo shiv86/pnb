@@ -27,7 +27,7 @@ public class YahooParentDataLoadTask extends Task {
 
     @Autowired
     private YahooEarningsTask yahooEarningTask;
-    
+
     @Autowired
     private EarningsRepo earnRepo;
 
@@ -36,18 +36,20 @@ public class YahooParentDataLoadTask extends Task {
     @Override
     public TaskMetaData process() {
         tasks.add(yahooAnncmtTask);
-       // tasks.add(yahooEarningTask);
+        tasks.add(yahooEarningTask);
         List<TaskMetaData> metaDataResult = new ArrayList<TaskMetaData>();
         LocalDate lastEarningsTaskDate = earnRepo.getLastEarningsTaskRunDate();
-        //taskDate = lastEarningsTaskDate.plusDays(1);
-        taskDate = LocalDate.of(2014, 07, 31);
+        // taskDate = lastEarningsTaskDate.plusDays(1);
+        taskDate = LocalDate.of(2015, 12, 14);
         //taskEndDate = taskDate.plusDays(10);
-        taskEndDate = LocalDate.of(2014, 07, 31);
+        taskEndDate = LocalDate.of(2015, 12, 14);
         actualStartDate = taskDate;
         while (!taskDate.isAfter((taskEndDate))) {
             for (Task task : tasks) {
                 task.start(taskDate, taskEndDate);
-                metaDataResult.add(task.getTaskMetaData());
+                if (task.getTaskMetaData() != null) {
+                    metaDataResult.add(task.getTaskMetaData());
+                }
             }
             taskDate = taskDate.plusDays(1);
         }

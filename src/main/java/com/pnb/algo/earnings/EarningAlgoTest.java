@@ -1,4 +1,4 @@
-package com.pnb.algo;
+package com.pnb.algo.earnings;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ public class EarningAlgoTest {
         BigDecimal currentCon = bd(earning.getConsensusEPS());
         BigDecimal prevCon = bd(histEarnings.get(histEarnings.size() -1).getConsensusEPS());
         
-        BigDecimal surpriseIndex = rank.getSurpriseIndex(currentCon, EarningsRevisionGame.getConsensusType(currentCon, prevCon));
+        BigDecimal surpriseIndex = rank.getSurpriseIndex(Earning.getConsensusType(currentCon, prevCon));
         System.out.println(surpriseIndex);
     }
     

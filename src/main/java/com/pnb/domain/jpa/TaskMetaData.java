@@ -48,7 +48,7 @@ public class TaskMetaData extends BaseEntity {
     }
 
     public enum TASK_TYPE {
-        DATA_LOAD
+        DATA_LOAD, PERSIST
     }
 
     public TaskMetaData() {

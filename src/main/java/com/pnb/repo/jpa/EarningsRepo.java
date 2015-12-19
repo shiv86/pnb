@@ -28,8 +28,11 @@ public interface EarningsRepo extends JpaRepository<Earning, Long> {
     @Query(value = "SELECT * FROM earning WHERE symbol = ?1 AND earnings_date < date(?2) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%' ORDER BY earnings_date ASC", nativeQuery = true)
     List<Earning> getHistoricalPopulateEarnings(String sym, String earnDate);
 
-    @Query(value = "SELECT * FROM earning WHERE earnings_date = date(?1) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%'", nativeQuery = true)
+    @Query(value = "SELECT * FROM earning WHERE earnings_date = date(?1) AND consensus_eps IS NOT NULL AND symbol not like '%.%'", nativeQuery = true)
     List<Earning> findByDateAndConsensusEPSNotNull(String date);
+    
+    @Query(value = "SELECT * FROM earning WHERE earnings_date = date(?1) AND consensus_eps IS NOT NULL AND reported_eps IS NOT NULL AND symbol not like '%.%'", nativeQuery = true)
+    List<Earning> findByDateAndConsensusANDSurpriseEPSNotNull(String date);
 
     /*
      * Note earningRepo is used to determine the lastEarningsTaskRun

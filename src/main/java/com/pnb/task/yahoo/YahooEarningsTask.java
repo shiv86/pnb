@@ -36,7 +36,7 @@ public class YahooEarningsTask extends YahooTask {
         try {
             
             if (taskDate.isAfter((LocalDate.now())) || taskDate.isEqual((LocalDate.now()))) {
-               return new TaskMetaData(taskDate, YAHOO_EARNINGS, TASK_TYPE.DATA_LOAD, EARNINGS_TYPE.EPS.toString(), STATUS.COMPLETED, "CANNOT_PROCESS_FUTURE_TASK_DATE");
+                return null;
             }
             earningsEPS = YahooUtil.getDocument(taskDate, EARNINGS_TYPE.EPS);
 

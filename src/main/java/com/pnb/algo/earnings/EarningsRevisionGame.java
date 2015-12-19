@@ -1,4 +1,4 @@
-package com.pnb.algo;
+package com.pnb.algo.earnings;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,8 +9,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.pnb.algo.EarningRank.CONSENSUS_REVISION;
-import com.pnb.algo.EarningRank.QUAD;
+import com.pnb.algo.earnings.EarningRank.CONSENSUS_REVISION;
+import com.pnb.algo.earnings.EarningRank.QUAD;
 import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.repo.jpa.EarningsRepo;
@@ -40,18 +40,19 @@ public class EarningsRevisionGame extends Task {
         GameResult q4 = new GameResult(QUAD.QNRPS);
 
         while (!taskDate.isAfter((taskEndDate))) {
-            List<Earning> allEarningAnnoucement = earnRepo.findByDateAndConsensusEPSNotNull(taskDate.toString());
+            List<Earning> allEarningAnnoucement = earnRepo.findByDateAndConsensusANDSurpriseEPSNotNull(taskDate.toString());
             System.out.println("Earning Prediction for Date:" + taskDate.toString());
             for (Earning earningAnnouncement : allEarningAnnoucement) {
                 List<Earning> allHisEarningForSym = earnRepo.getHistoricalPopulateEarnings(earningAnnouncement.getSymbol(), taskDate.toString());
                 if (allHisEarningForSym.size() > 1) {
-                    BigDecimal currentCon = bd(earningAnnouncement.getConsensusEPS());
-                    BigDecimal perviousCon = bd(allHisEarningForSym.get(allHisEarningForSym.size() - 1).getConsensusEPS());
+                    BigDecimal currentCon = earningAnnouncement.getConsensusEPSBD();
+                    BigDecimal perviousCon = allHisEarningForSym.get(allHisEarningForSym.size() - 1).getConsensusEPSBD();
 
                     EarningRank earnRank = rankAlgo.getRank(earningAnnouncement.getSymbol(), taskDate, allHisEarningForSym);
+                    CONSENSUS_REVISION conRevision = Earning.getConsensusType(currentCon, perviousCon);
 
                     if (earnRank != null) {
-                        BigDecimal surpriseIndex = earnRank.getSurpriseIndex(currentCon, getConsensusType(currentCon, perviousCon));
+                        BigDecimal surpriseIndex = earnRank.getSurpriseIndex(conRevision);
 
                         if (!surpriseIndex.equals(BigDecimal.ZERO)) {
 
@@ -75,7 +76,7 @@ public class EarningsRevisionGame extends Task {
 
                             }
 
-                            if (surpriseIndex.signum() == 1 && Math.signum(earningAnnouncement.getSurprisePercentage()) == 1) {
+                            if (Earning.postiveSurpriseIsPredicted(surpriseIndex) && isActualSurprisePositive(earningAnnouncement)) {
 
                                 switch (earnRank.quad) {
                                     case QPRPS:
@@ -83,10 +84,9 @@ public class EarningsRevisionGame extends Task {
                                                 surpriseIndex.toString() + "|" + earningAnnouncement.getSurprisePercentage().toString());
                                         q1.totalSuccessFullPrediction++;
                                         break;
-                                    case QPRNS:
-                                        q2.totalSuccessFullPrediction++;
+                                    case QNRPS:
+                                        q4.totalSuccessFullPrediction++;
                                         break;
-
                                     default:
                                         break;
 
@@ -95,14 +95,14 @@ public class EarningsRevisionGame extends Task {
                                 success++;
                             }
 
-                            if (surpriseIndex.signum() == -1 && Math.signum(earningAnnouncement.getSurprisePercentage()) == -1) {
+                            if (Earning.negativeSurpriseIsPredicted(surpriseIndex) && isActualSurpriseNegative(earningAnnouncement)) {
 
                                 switch (earnRank.quad) {
                                     case QNRNS:
                                         q3.totalSuccessFullPrediction++;
                                         break;
-                                    case QNRPS:
-                                        q4.totalSuccessFullPrediction++;
+                                    case QPRNS:
+                                        q2.totalSuccessFullPrediction++;
                                         break;
 
                                     default:
@@ -124,26 +124,25 @@ public class EarningsRevisionGame extends Task {
         }
 
         System.out.println("Out of " + totalPrediction + " predictions, " + success + " were successfull");
-        System.out.println("Out of q1.totalNumQuadPrediction" + q1.totalNumQuadPrediction + " predictions, " + q1.totalSuccessFullPrediction + " were successfull");
-        quadOne.keySet().forEach( x-> { System.out.println(x+"|"+quadOne.get(x));});
+        System.out.println("Out of q1.totalNumQuadPrediction" + q1.totalNumQuadPrediction + " predictions, " + q1.totalSuccessFullPrediction
+                + " were successfull");
+        quadOne.keySet().forEach(x -> {
+            System.out.println(x + "|" + quadOne.get(x));
+        });
 
         return null;
     }
 
-    public static CONSENSUS_REVISION getConsensusType(BigDecimal currentCon, BigDecimal perviousCon) {
 
-        int compCon = currentCon.compareTo(perviousCon);
-        if (compCon == 1) {
-            return CONSENSUS_REVISION.POSITIVE;
-        } else if (compCon == -1) {
-            return CONSENSUS_REVISION.NEGATIVE;
-        }
-        return CONSENSUS_REVISION.NEUTRAL;
+    private boolean isActualSurpriseNegative(Earning earningAnnouncement) {
+        return Math.signum(earningAnnouncement.getSurprisePercentage()) == -1;
     }
 
-    private BigDecimal bd(Double someInt) {
-        return BigDecimal.valueOf(someInt);
+    private boolean isActualSurprisePositive(Earning earningAnnouncement) {
+        return Math.signum(earningAnnouncement.getSurprisePercentage()) == 1;
     }
+
+
 
     class GameResult {
         QUAD quad;

@@ -31,6 +31,10 @@ public class YahooAnncmtTask extends YahooTask {
     private static final String BEFORE_MARKET_OPEN = "Before Market Open";
     private static final String YAHOO_ANNCMT = "YAHOO_ANNCMT";
     private List<Earning> earningAnncmt;
+    
+    
+    @Autowired
+    private YahooUtil yahooUtil;
 
     @Override
     protected TaskMetaData process() {
@@ -160,6 +164,7 @@ public class YahooAnncmtTask extends YahooTask {
                         }
 
                         Earning earning = new Earning(company, tds.get(symbolInt).text(), anncmtTime, rawAnncmtTime, taskDate);
+                        earning.setTradeDate(yahooUtil.getTradeDate(earning));
                         earning.setEarningsAnnoucementPopulated(true);
                         if (!StringUtil.isBlank(consensusString) && YahooUtil.isNumeric(consensusString)) {
                             earning.setConsensusEPS(Double.valueOf(consensusString));

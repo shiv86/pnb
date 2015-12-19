@@ -1,4 +1,4 @@
-package com.pnb.algo;
+package com.pnb.algo.earnings;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
 import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
 import com.pnb.repo.jpa.EarningsRepo;
-import com.pnb.repo.jpa.PriceRepoService;
+import com.pnb.repo.jpa.RepoService;
 
 @Service
 public class YahooPriceHistoryTask extends YahooTask {
@@ -27,11 +28,11 @@ public class YahooPriceHistoryTask extends YahooTask {
     private EarningsRepo earnRepo;
 
     @Autowired
-    private PriceRepoService priceRepo;
+    private RepoService priceRepo;
 
     @Override
     protected TaskMetaData process() {
-        List<String> allUSSym = earnRepo.getAllUSSymbol();
+        List<String> allUSSym = Arrays.asList("^VIX");//earnRepo.getAllUSSymbol();
         for (String symbol : allUSSym) {
 
             List<PriceHistory> allPricesForSymbol = new ArrayList<PriceHistory>();

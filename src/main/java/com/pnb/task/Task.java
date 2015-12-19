@@ -7,9 +7,12 @@ import java.util.Date;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.jsoup.helper.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.pnb.domain.jpa.TaskMetaData;
+import com.pnb.domain.jpa.TaskMetaData.STATUS;
+import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
 import com.pnb.repo.jpa.TaskMetaRepo;
 
 public abstract class Task {
@@ -60,6 +63,20 @@ public abstract class Task {
 
     public TaskMetaData getTaskMetaData() {
         return this.taskMetaData;
+    }
+
+    protected TaskMetaData buildErrorMeta(String taskName, TASK_TYPE taskType, String taskSubType, LocalDate taskDate, String eMessage) {
+        StringBuffer sb = new StringBuffer();
+
+        if (!StringUtil.isBlank(eMessage)) {
+            if (eMessage.length() > 150) {
+                sb.append(eMessage.substring(0, 150));
+            } else {
+                sb.append(eMessage);
+            }
+        }
+
+        return new TaskMetaData(taskDate, taskName, TASK_TYPE.DATA_LOAD, taskType.toString(), STATUS.ERROR, sb.toString());
     }
 
 }

@@ -1,5 +1,7 @@
 package com.pnb.task.yahoo;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +32,24 @@ public class TradeDateTask extends Task {
     protected TaskMetaData process() {
         int totalAdded = 0;
         List<Earning> earnings  = earnRepo.findAll();
+        List<Earning> earningsToUpdate = new ArrayList<Earning>();
         try {
             for(Earning earning : earnings){
-                earning.setTradeDate(yahooUtil.getTradeDate(earning));
+                LocalDate tradeDate = yahooUtil.getTradeDate(earning);
+                if(tradeDate != null){        
+                    totalAdded++;
+                    earning.setTradeDate(tradeDate);
+                    earningsToUpdate.add(earning);
+                }    
             }
-            earnRepo.save(earnings);
+            earnRepo.save(earningsToUpdate);
         } catch (Exception e) {
             System.err.println("Exception has occurred:");
             System.err.println(e);
         }
 
-        return new TaskMetaData(taskDate, TRADE_DATE_TASK, TASK_TYPE.PERSIST, "ONCE_OFF", STATUS.COMPLETED, "Total TradeDate populated:"
-                + totalAdded);
+        return new TaskMetaData(taskDate, TRADE_DATE_TASK, TASK_TYPE.PERSIST, "ONCE_OFF", STATUS.COMPLETED, "Total TradeDate populated: "
+                + totalAdded+"/"+earnings.size());
 
     }
 

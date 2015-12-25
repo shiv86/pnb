@@ -72,7 +72,7 @@ public class YahooUtil {
     }
 
     public static boolean shouldRecordError(LocalDate localDate, String eMessage) {
-        if (isWeekDay(localDate)) {
+        if (isWeekDay(localDate) && localDate.isBefore(LocalDate.now())) {
             return true;
         }
         return false;

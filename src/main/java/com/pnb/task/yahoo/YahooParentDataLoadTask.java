@@ -39,10 +39,10 @@ public class YahooParentDataLoadTask extends Task {
         tasks.add(yahooEarningTask);
         List<TaskMetaData> metaDataResult = new ArrayList<TaskMetaData>();
         LocalDate lastEarningsTaskDate = earnRepo.getLastEarningsTaskRunDate();
-       // taskDate = lastEarningsTaskDate.plusDays(1);
-        taskDate = LocalDate.of(2015, 12, 23);
-        //taskEndDate = taskDate.plusDays(10);
-        taskEndDate = LocalDate.of(2015, 12, 23);
+        taskDate = lastEarningsTaskDate.plusDays(1);
+        //taskDate = LocalDate.of(2015, 12, 23);
+        taskEndDate = taskDate.plusDays(10);
+        //taskEndDate = LocalDate.of(2015, 12, 23);
         actualStartDate = taskDate;
         while (!taskDate.isAfter((taskEndDate))) {
             for (Task task : tasks) {

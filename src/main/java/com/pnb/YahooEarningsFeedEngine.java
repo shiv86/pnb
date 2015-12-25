@@ -65,12 +65,12 @@ public class YahooEarningsFeedEngine {
     @PostConstruct
     public void start() {
         // retryErroredTasks.start(startDate, endDate);
-        // yahooDataLoadTask.start(startDate,endDate);
+         yahooDataLoadTask.start(startDate,endDate);
         // yahooTickCleaner.start(startDate, endDate);
         // earningRevisionGame.start(startDate, endDate);
         // priceLoadTask.start(startDate, endDate);
         // anncmtChecker.start(startDate, startDate);
-         buyRecommendationTask.start(startDate, endDate);
+        // buyRecommendationTask.start(startDate, endDate);
         // returnsTask.start(startDate, endDate);
         // csvBuilder.start(startDate, endDate);
         // earnReturnsTask.start(startDate, endDate);

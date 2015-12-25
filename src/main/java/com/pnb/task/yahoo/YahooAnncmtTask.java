@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.pnb.YahooEarningsFeedEngine;
 import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.Earning.ANNCMT_TIME;
 import com.pnb.domain.jpa.Earning.EARNINGS_TYPE;
@@ -193,6 +192,11 @@ public class YahooAnncmtTask extends YahooTask {
         }
 
         String message = new String("Total rows added: " + earningAnncmt.size());
+        
+        if(earningAnncmt.size() == 0){
+            return null;
+        }
+        
         return new TaskMetaData(taskDate, YAHOO_ANNCMT, TASK_TYPE.DATA_LOAD, EARNINGS_TYPE.ANNCMT.toString(), STATUS.COMPLETED, message);
     }
 

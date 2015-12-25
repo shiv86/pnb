@@ -15,10 +15,12 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 
 import com.pnb.algo.earnings.EarningRank.CONSENSUS_REVISION;
 
-@Table(name = "earning", indexes = { @Index(unique = true, name = "earnings_idx", columnList = "symbol,earnings_date") })
+@Table(name = "earning", indexes = { @Index(unique = true, name = "earnings_idx", columnList = "symbol,earnings_date") },
+                                      uniqueConstraints={@UniqueConstraint(columnNames = {"symbol" , "earnings_date"})})
 @Entity
 public class Earning extends BaseEntity {
 

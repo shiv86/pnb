@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 
-import com.pnb.YahooEarningsFeedEngine;
 import com.pnb.domain.jpa.Earning.EARNINGS_TYPE;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;

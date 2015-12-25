@@ -24,8 +24,8 @@ public class YahooEarningsFeedEngine {
 
     private final static LocalDate DEFAULT_START_DATE = LocalDate.now().minusDays(30);
     private final static LocalDate DEFAULT_END_DATE = LocalDate.now().plusDays(10);
-    private LocalDate startDate = LocalDate.of(2012, 04, 01);// DEFAULT_START_DATE;//
-    private LocalDate endDate = LocalDate.of(2015, 11, 19);// LocalDate.now(); //LocalDate.of(2015, 11,
+    private LocalDate startDate = LocalDate.of(2001, 01, 01);// DEFAULT_START_DATE;//
+    private LocalDate endDate = LocalDate.of(2001, 01, 01);// LocalDate.now(); //LocalDate.of(2015, 11,
                                                           // 13);//startDate.now();//LocalDate.of(2015, 11, 30); ////
                                                           // DEFAULT_END_DATE; //
 
@@ -64,7 +64,7 @@ public class YahooEarningsFeedEngine {
     @PostConstruct
     public void start() {
         // retryErroredTasks.start(startDate, endDate);
-        // yahooDataLoadTask.start(startDate,endDate);
+         yahooDataLoadTask.start(startDate,endDate);
         // yahooTickCleaner.start(startDate, endDate);
         // earningRevisionGame.start(startDate, endDate);
         // priceLoadTask.start(startDate, endDate);
@@ -73,7 +73,7 @@ public class YahooEarningsFeedEngine {
         // returnsTask.start(startDate, endDate);
         // csvBuilder.start(startDate, endDate);
         // earnReturnsTask.start(startDate, endDate);
-         tradeDateTask.start(startDate, endDate);
+        // tradeDateTask.start(startDate, endDate);
     }
 
 }

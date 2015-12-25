@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.pnb.algo.earnings.EarningRank.CONSENSUS_REVISION;
 
@@ -54,6 +55,8 @@ public class Earning extends BaseEntity {
     private boolean earningsSurprisePopulated;
     @Column(name = "error")
     private String errors;
+    @Transient
+    private boolean epsChanged = false;
 
     private final static String EARNINGS_ANNCMT_URL = "http://biz.yahoo.com/research/earncal/";
     private final static String EARNINGS_SURPRISE_URL = "http://biz.yahoo.com/z/";
@@ -285,6 +288,16 @@ public class Earning extends BaseEntity {
     public void setTradeDate(LocalDate tradeDate) {
         this.tradeDate = tradeDate;
     }
+
+    public boolean epsChanged() {
+        return epsChanged;
+    }
+
+    public void setEpsChanged(boolean epsHasChanged) {
+        this.epsChanged = epsHasChanged;
+    }
+    
+    
     
 
 }

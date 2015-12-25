@@ -43,7 +43,9 @@ public class YahooAnncmtTask extends YahooTask {
         try {
             earningDoc = YahooUtil.getDocument(taskDate, EARNINGS_TYPE.ANNCMT);
 
-            Element table = earningDoc.select("tbody").get(5);
+            Elements tbodys = earningDoc.select("tbody");
+            int mainTableIndex = 5;
+            Element table = earningDoc.select("tbody").get(mainTableIndex);
             /*-
              <tbody>
                  <tr>

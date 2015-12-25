@@ -27,20 +27,23 @@ public class TradeDateTask extends Task {
     private EarningsRepo earnRepo;
     @Autowired
     private YahooUtil yahooUtil;
-    
+
     @Override
     protected TaskMetaData process() {
         int totalAdded = 0;
-        List<Earning> earnings  = earnRepo.findAll();
+        int totalSkipped = 0;
+        List<Earning> earnings = earnRepo.findAll();
         List<Earning> earningsToUpdate = new ArrayList<Earning>();
         try {
-            for(Earning earning : earnings){
+            for (Earning earning : earnings) {
                 LocalDate tradeDate = yahooUtil.getTradeDate(earning);
-                if(tradeDate != null){        
+                if (tradeDate != null) {
                     totalAdded++;
                     earning.setTradeDate(tradeDate);
                     earningsToUpdate.add(earning);
-                }    
+                } else {
+                    totalSkipped++;
+                }
             }
             earnRepo.save(earningsToUpdate);
         } catch (Exception e) {
@@ -48,8 +51,8 @@ public class TradeDateTask extends Task {
             System.err.println(e);
         }
 
-        return new TaskMetaData(taskDate, TRADE_DATE_TASK, TASK_TYPE.PERSIST, "ONCE_OFF", STATUS.COMPLETED, "Total TradeDate populated: "
-                + totalAdded+"/"+earnings.size());
+        return new TaskMetaData(taskDate, TRADE_DATE_TASK, TASK_TYPE.PERSIST, "ONCE_OFF", STATUS.COMPLETED,
+                "Total TradeDate populated | Total Added: " + totalAdded + "| Total Skipped:" + totalSkipped + "| Total Size:" + earnings.size());
 
     }
 

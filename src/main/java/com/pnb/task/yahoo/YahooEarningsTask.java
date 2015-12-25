@@ -62,7 +62,9 @@ public class YahooEarningsTask extends YahooTask {
                                 Earning existingEarning = earnRepo.findBySymbolAndDate(symbol, taskDate);
                                 if (existingEarning != null) {
                                     populateEPSValues(taskDate, tds, existingEarning);
-                                    earningAnncmt.add(existingEarning);
+                                    if(existingEarning.epsChanged()){
+                                        earningAnncmt.add(existingEarning);
+                                    }
                                 } else {
                                     Earning newEarnings = new Earning(company, symbol, ANNCMT_TIME.NOT_SUPPLIED, null, taskDate);
                                     populateEPSValues(taskDate, tds, newEarnings);
@@ -84,6 +86,7 @@ public class YahooEarningsTask extends YahooTask {
         return new TaskMetaData(taskDate, YAHOO_EARNINGS, TASK_TYPE.DATA_LOAD, EARNINGS_TYPE.EPS.toString(), STATUS.COMPLETED, message);
     }
 
+    
     private void populateEPSValues(LocalDate localDate, Elements tds, Earning earning) {
 
         Optional<String> suprisePercentage = Optional.of(tds.get(2).text());
@@ -92,11 +95,31 @@ public class YahooEarningsTask extends YahooTask {
 
         suprisePercentage.filter(x -> YahooUtil.isNumeric(x)).ifPresent(x -> earning.setSurprisePercentage(Double.valueOf(x)));
         consensusEPS.filter(x -> YahooUtil.isNumeric(x)).ifPresent(x -> earning.setConsensusEPS(Double.valueOf(x)));
-        reportedEPS.filter(x -> YahooUtil.isNumeric(x)).ifPresent(x -> earning.setReportedEPS(Double.valueOf(x)));
+        reportedEPS.filter(x -> YahooUtil.isNumeric(x)).ifPresent(
+                x -> { 
+                        Double persistedReportedEPS = earning.getReportedEPS();
+                        Double parsedReportedEPS = Double.valueOf(x);
+                        
+                        if(persistedReportedEPS == null){
+                            earning.setReportedEPS(Double.valueOf(parsedReportedEPS));
+                            earning.setEpsChanged(true);
+                            return;
+                        }
+                                
+                        Double diffEPS = parsedReportedEPS - persistedReportedEPS;
+                        if (Math.abs(diffEPS-1.0) > 0.000001) {
+                            earning.setReportedEPS(Double.valueOf(parsedReportedEPS));
+                            earning.setEpsChanged(true);
+                            return;
+                        }
+                    }
+                );
 
         if (earning.getSurprisePercentage() == null) {
             earning.setManuallyCalculatedPercentage();
         }
+        
+        
 
         earning.setEPSPopulated(true);
     }

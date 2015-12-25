@@ -48,7 +48,8 @@ public interface EarningsRepo extends JpaRepository<Earning, Long> {
 
     @Query(value = "select * from earning where anncmt_time != 'NOT_SUPPLIED' AND anncmt_time != 'DURING_MKT_HRS' AND symbol not like '%.%' AND earnings_date > '2015-11-01'", nativeQuery = true)
     List<Earning> getAllEarningsWhereTimeIsSuppliedOrderByAsc();
-
-
+    
+    @Query(value = "select count(*) from earning where anncmt_time != 'NOT_SUPPLIED' and symbol not like '%.%", nativeQuery = true)
+    List<Earning> getEarningsToPopulateTradeDate();
 
 }

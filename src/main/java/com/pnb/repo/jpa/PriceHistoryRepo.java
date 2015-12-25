@@ -14,5 +14,15 @@ public interface PriceHistoryRepo extends JpaRepository<PriceHistory, Long> {
     List<PriceHistory> getPotentialPriceHistoryForEarnings(String sym, String earnDate, String tPlusOneEarnDate);
 
     PriceHistory findBySymbolAndDate(String Symbol, LocalDate date);
+    
+    @Query(value = "select max(date) from price_history where symbol = ?1", nativeQuery = true)
+    LocalDate getLastPriceHistoryTaskRunDate(String symbol);
+    
+    /*
+     * Important to note and task_name = 'PRICE_HISTORY' and status = 'ERROOR' 
+     * will exclude symbol from updating the price history information
+     */
+    @Query(value = "select distinct(symbol) from earning where symbol not in (select distinct(task_sub_type) from task_meta where task_name = 'PRICE_HISTORY' and status = 'ERROR') and symbol not like '%.%' order by symbol asc", nativeQuery = true)
+    List<String> getAllSymbolsForPriceHistoryUpdate();
 
 }

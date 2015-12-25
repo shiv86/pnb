@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.pnb.domain.jpa.BuyRecommend;
 import com.pnb.domain.jpa.EarnReturn;
+import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.PriceHistory;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
@@ -27,6 +28,8 @@ public class RepoService {
     private BuyRecommendRepo buyRecommendRepo;
     @Autowired
     private EarnReturnRepo earnReturnRepo;
+    @Autowired
+    private EarningsRepo earnRepo;
 
     @Transactional(value = TxType.REQUIRES_NEW)
     public void saveAllPricesForSymbols(List<PriceHistory> allPricesForSymbol) {
@@ -49,7 +52,13 @@ public class RepoService {
 
     @Transactional(value = TxType.REQUIRES_NEW)
     public void saveError(String symbol, StringBuffer sb, LocalDate taskEndDate) {
-        taskRepo.saveAndFlush(new TaskMetaData(taskEndDate, "PRICE_HISTORY", TASK_TYPE.DATA_LOAD, "Symbol:" + symbol, STATUS.ERROR, sb.toString()));
+        taskRepo.saveAndFlush(new TaskMetaData(taskEndDate, "PRICE_HISTORY", TASK_TYPE.DATA_LOAD,symbol, STATUS.ERROR, sb.toString()));
+    }
+    
+    @Transactional(value = TxType.REQUIRES_NEW)    
+    public void saveEarnings(List<Earning> earning){
+        earnRepo.save(earning);
+        earnRepo.flush();
     }
 
 }

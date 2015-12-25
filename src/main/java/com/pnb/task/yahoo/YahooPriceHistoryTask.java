@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,28 +17,37 @@ import com.pnb.domain.jpa.PriceHistory.FREQUENCY;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
 import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
-import com.pnb.repo.jpa.EarningsRepo;
+import com.pnb.repo.jpa.PriceHistoryRepo;
 import com.pnb.repo.jpa.RepoService;
 
 @Service
 public class YahooPriceHistoryTask extends YahooTask {
 
     @Autowired
-    private EarningsRepo earnRepo;
+    private PriceHistoryRepo priceHisRepo;
 
     @Autowired
     private RepoService priceRepo;
 
+    private int aLastTaskIndexMonth = 0;
+    private int bLastTaskday = 2;
+    private int cLastTaskYear = 1962;
+
     @Override
     protected TaskMetaData process() {
-        List<String> allUSSym = Arrays.asList("^VIX");//earnRepo.getAllUSSymbol();
-        for (String symbol : allUSSym) {
-
+        LocalDate today = LocalDate.now();
+        List<String> allSymWhichRequirePriceUpdates = priceHisRepo.getAllSymbolsForPriceHistoryUpdate();
+        int totalSymbolSaved = 0;
+        for (String symbol : allSymWhichRequirePriceUpdates) {
+            LocalDate lastTaskRunDate = priceHisRepo.getLastPriceHistoryTaskRunDate(symbol);
             List<PriceHistory> allPricesForSymbol = new ArrayList<PriceHistory>();
+            if(!grtThanFiveDays(today, lastTaskRunDate)){
+                continue;
+            }
             CSVReader reader = null;
             try {
                 Thread.sleep(1000L);
-                URL stockURL = new URL(getURL(symbol));
+                URL stockURL = new URL(getURL(symbol, lastTaskRunDate));
                 BufferedReader in = new BufferedReader(new InputStreamReader(stockURL.openStream()));
                 reader = new CSVReader(in);
                 String[] row = null;
@@ -57,7 +65,9 @@ public class YahooPriceHistoryTask extends YahooTask {
                     PriceHistory priceHistory = new PriceHistory(symbol, priceDate, open, high, low, close, volume, adjClose, FREQUENCY.DAILY);
                     allPricesForSymbol.add(priceHistory);
                 }
+
                 priceRepo.saveAllPricesForSymbols(allPricesForSymbol);
+                totalSymbolSaved++;
                 reader.close();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -72,11 +82,37 @@ public class YahooPriceHistoryTask extends YahooTask {
 
             }
         }
-        return new TaskMetaData(taskEndDate, "PRICE_HISTORY", TASK_TYPE.DATA_LOAD, "PARENT_DATA_LOAD", STATUS.COMPLETED, null);
+        return new TaskMetaData(taskEndDate, "PRICE_HISTORY", TASK_TYPE.DATA_LOAD, "PARENT_DATA_LOAD", STATUS.COMPLETED, totalSymbolSaved
+                + " out of " + allSymWhichRequirePriceUpdates.size() + " have been saved.");
     }
 
-    private static String getURL(String symbol) {
-        return "http://real-chart.finance.yahoo.com/table.csv?s=" + symbol + "&a=00&b=2&c=1962&d=10&e=28&f=2015&g=d&ignore=.csv";
+    private boolean grtThanFiveDays(LocalDate today, LocalDate lastTaskRunDate) {
+        if(lastTaskRunDate != null){
+            if(lastTaskRunDate.isAfter(today.minusDays(5))){
+              return false;
+            }
+        }
+        return true;
+    }
+
+    private String getURL(String symbol, LocalDate lastTaskRunDate) {
+        if (lastTaskRunDate != null) {
+            aLastTaskIndexMonth = lastTaskRunDate.getMonthValue() - 1;
+            bLastTaskday = lastTaskRunDate.getDayOfMonth() + 1;
+            cLastTaskYear = lastTaskRunDate.getYear();
+        } else {
+            aLastTaskIndexMonth = 0;
+            bLastTaskday = 2;
+            cLastTaskYear = 1962;
+        }
+
+        LocalDate today = LocalDate.now();
+        int dCurrentIndexMonth = today.getMonthValue() - 1;
+        int eCurrentDay = today.getDayOfMonth();
+        int fCurrentYear = today.getYear();
+
+        return "http://real-chart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" + aLastTaskIndexMonth + "&b=" + bLastTaskday + "&c="
+                + cLastTaskYear + "&d=" + dCurrentIndexMonth + "&e=" + eCurrentDay + "&f=" + fCurrentYear + "&g=d&ignore=.csv";
     }
 
 }

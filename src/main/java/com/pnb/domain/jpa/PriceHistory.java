@@ -12,8 +12,10 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
-@Table(name = "price_history", indexes = { @Index(name = "price_history_idx", columnList = "symbol,date", unique = true) })
+@Table(name = "price_history", indexes = { @Index(name = "price_history_idx", columnList = "symbol,date", unique = true) },
+                                            uniqueConstraints={@UniqueConstraint(columnNames = {"symbol" , "date"})})
 @Entity
 public class PriceHistory {
 

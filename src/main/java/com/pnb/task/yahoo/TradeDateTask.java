@@ -12,6 +12,7 @@ import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
 import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
 import com.pnb.repo.jpa.EarningsRepo;
+import com.pnb.repo.jpa.RepoService;
 import com.pnb.task.Task;
 import com.pnb.util.YahooUtil;
 
@@ -26,16 +27,20 @@ public class TradeDateTask extends Task {
     @Autowired
     private EarningsRepo earnRepo;
     @Autowired
+    private RepoService repoService;
+    @Autowired
     private YahooUtil yahooUtil;
 
     @Override
     protected TaskMetaData process() {
+        int totalProcessed = 0;
         int totalAdded = 0;
         int totalSkipped = 0;
         List<Earning> earnings = earnRepo.findAll();
         List<Earning> earningsToUpdate = new ArrayList<Earning>();
         try {
             for (Earning earning : earnings) {
+                totalProcessed++;
                 LocalDate tradeDate = yahooUtil.getTradeDate(earning);
                 if (tradeDate != null) {
                     totalAdded++;
@@ -45,10 +50,14 @@ public class TradeDateTask extends Task {
                     totalSkipped++;
                 }
             }
-            earnRepo.save(earningsToUpdate);
+            if(earningsToUpdate.size() > 100 || earnings.size() == totalProcessed){
+                repoService.saveEarnings(earningsToUpdate);
+                earningsToUpdate = new ArrayList<Earning>(); 
+            }
         } catch (Exception e) {
             System.err.println("Exception has occurred:");
             System.err.println(e);
+            return null; 
         }
 
         return new TaskMetaData(taskDate, TRADE_DATE_TASK, TASK_TYPE.PERSIST, "ONCE_OFF", STATUS.COMPLETED,

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 
+import com.pnb.YahooEarningsFeedEngine;
 import com.pnb.domain.jpa.Earning.EARNINGS_TYPE;
 import com.pnb.domain.jpa.TaskMetaData;
 import com.pnb.domain.jpa.TaskMetaData.STATUS;
@@ -13,6 +14,8 @@ import com.pnb.task.Task;
 import com.pnb.util.YahooUtil;
 
 public abstract class YahooTask extends Task {
+    
+    private static final String IGNORE_LIST = "QIHU";
 
     protected TaskMetaData buildErrorMeta(String taskName, EARNINGS_TYPE earningsType, Document earningDoc, LocalDate taskDate, String eMessage) {
         StringBuffer sb = new StringBuffer();
@@ -30,6 +33,13 @@ public abstract class YahooTask extends Task {
         }
 
         return new TaskMetaData(taskDate, taskName, TASK_TYPE.DATA_LOAD, earningsType.toString(), STATUS.ERROR, sb.toString());
+    }
+    
+    protected boolean ignoreSecurity(String symbol){
+        if(IGNORE_LIST.contains(symbol.toUpperCase())){
+            return true;
+        }
+        return false;
     }
 
 }

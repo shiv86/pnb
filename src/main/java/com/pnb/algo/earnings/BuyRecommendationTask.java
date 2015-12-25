@@ -82,7 +82,7 @@ public class BuyRecommendationTask extends Task {
                       } */
                 }
                 taskDate = taskDate.plusDays(1);
-                // repoService.saveAllBuyRecommendation(allBuysRecommended);
+                repoService.saveAllBuyRecommendation(allBuysRecommended);
             }
 
             System.err.println("------------------------------------------");

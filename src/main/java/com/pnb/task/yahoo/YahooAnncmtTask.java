@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.pnb.YahooEarningsFeedEngine;
 import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.Earning.ANNCMT_TIME;
 import com.pnb.domain.jpa.Earning.EARNINGS_TYPE;
@@ -114,6 +115,9 @@ public class YahooAnncmtTask extends YahooTask {
                         }
 
                         String symbol = tds.get(symbolInt).text();
+                        if(ignoreSecurity(symbol)){
+                            continue;
+                        }
                         String company = tds.get(companyInt).text();
                         String rawAnncmtTime = tds.get(anncmtTimeInt).text().trim();
                         checkRawAnncmtTimeIsValid(rawAnncmtTime,company);

@@ -59,6 +59,9 @@ public class YahooEarningsTask extends YahooTask {
                             String company = tds.get(0).text();
                             String symbol = tds.get(1).text();
                             if (!StringUtils.isEmpty(symbol)) {
+                                if(ignoreSecurity(symbol)){
+                                    continue;
+                                }
                                 Earning existingEarning = earnRepo.findBySymbolAndDate(symbol, taskDate);
                                 if (existingEarning != null) {
                                     populateEPSValues(taskDate, tds, existingEarning);

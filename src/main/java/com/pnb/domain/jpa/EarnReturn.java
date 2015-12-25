@@ -13,7 +13,7 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-@Table(name = "earn_return", indexes = { @Index(name = "earn_return_idx", columnList = "symbol,trade_date") })
+@Table(name = "earn_return", indexes = { @Index(unique = true, name = "earn_return_idx", columnList = "symbol,trade_date") })
 @Entity
 public class EarnReturn extends BaseEntity {
 

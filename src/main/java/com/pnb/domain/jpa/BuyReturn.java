@@ -4,8 +4,6 @@ import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,7 +11,7 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-@Table(name = "buyreturn", indexes = { @Index(name = "buy_return_idx", columnList = "symbol,trade_date") })
+@Table(name = "buyreturn", indexes = { @Index(unique = true, name = "buy_return_idx", columnList = "symbol,trade_date") })
 @Entity
 public class BuyReturn extends BaseEntity {
 

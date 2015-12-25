@@ -11,8 +11,11 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
-@Table(name = "buyrecommend", indexes = { @Index(name = "buy_recommen_idx", columnList = "symbol,earnings_date") })
+@Table(name = "buyrecommend",
+      indexes = { @Index(name = "buy_recommen_idx", columnList = "symbol,earnings_date") },
+      uniqueConstraints={@UniqueConstraint(columnNames = {"symbol" , "earnings_date"})})
 @Entity
 public class BuyRecommend extends BaseEntity {
 

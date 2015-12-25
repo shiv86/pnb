@@ -13,6 +13,7 @@ import com.pnb.algo.earnings.SurpriseIndexService.SurpriseIndex;
 import com.pnb.domain.jpa.BuyRecommend;
 import com.pnb.domain.jpa.Earning;
 import com.pnb.domain.jpa.TaskMetaData;
+import com.pnb.domain.jpa.TaskMetaData.STATUS;
 import com.pnb.domain.jpa.TaskMetaData.TASK_TYPE;
 import com.pnb.repo.jpa.EarningsRepo;
 import com.pnb.repo.jpa.RepoService;
@@ -32,7 +33,7 @@ public class BuyRecommendationTask extends Task {
 
     @Autowired
     private RepoService repoService;
-    
+
     @Autowired
     private YahooUtil yahooUtil;
 
@@ -42,6 +43,7 @@ public class BuyRecommendationTask extends Task {
         int successfulPredictions = 0;
         int buysSkippdeDueToNullTradeDate = 0;
         List<BuyRecommend> allBuysRecommended = new ArrayList<BuyRecommend>();
+        StringBuffer sb = new StringBuffer();
         try {
             while (!taskDate.isAfter((taskEndDate))) {
                 List<Earning> earnings = earnRepo.findByDateAndConsensusEPSNotNull(taskDate.toString());
@@ -82,7 +84,10 @@ public class BuyRecommendationTask extends Task {
                       } */
                 }
                 taskDate = taskDate.plusDays(1);
-                repoService.saveAllBuyRecommendation(allBuysRecommended);
+            }
+            saveAllBuyRecommendation(allBuysRecommended, sb);
+            if (sb.length() != 0) {
+                throw new Exception(sb.toString());
             }
 
             System.err.println("------------------------------------------");
@@ -93,16 +98,30 @@ public class BuyRecommendationTask extends Task {
         } catch (Exception e) {
             String eMessage = e.getMessage();
             System.err.println(eMessage);
-            if (StringUtil.isBlank(eMessage) || YahooUtil.shouldRecordError(taskDate, eMessage)) {
+            if (!StringUtil.isBlank(eMessage) || YahooUtil.shouldRecordError(taskDate, eMessage)) {
                 return buildErrorMeta(BUY_RECOMMENDATION, TASK_TYPE.PERSIST, QUAD.QPRPS.toString(), taskDate, eMessage);
             }
         }
 
-        // return new TaskMetaData(taskDate, BUY_RECOMMENDATION, TASK_TYPE.PERSIST, QUAD.QPRPS.toString(),
-        // STATUS.COMPLETED,
-        // String.valueOf(allBuysRecommended.size()));
-        return null;
+        return new TaskMetaData(taskDate, BUY_RECOMMENDATION, TASK_TYPE.PERSIST, QUAD.QPRPS.toString(), STATUS.COMPLETED,
+                String.valueOf(allBuysRecommended.size()));
     }
 
-   
+    public void saveAllBuyRecommendation(List<BuyRecommend> buyRecommendations, StringBuffer sb) {
+        for (BuyRecommend r : buyRecommendations) {
+            String symbol = r.getSymbol();
+            String earningsDate = r.getEarningDate().toString();
+
+            try {
+                repoService.saveBuyRecommendation(r);
+            } catch (Exception e) {
+                if (sb.length() == 0) {
+                    sb.append("ConstraintViolation:");
+                }
+                sb.append(symbol + ":" + earningsDate + "|");
+            }
+        }
+
+    }
+
 }

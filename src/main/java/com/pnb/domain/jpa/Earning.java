@@ -18,7 +18,7 @@ import javax.persistence.Transient;
 
 import com.pnb.algo.earnings.EarningRank.CONSENSUS_REVISION;
 
-@Table(name = "earning", indexes = { @Index(name = "earnings_idx", columnList = "symbol,earnings_date") })
+@Table(name = "earning", indexes = { @Index(unique = true, name = "earnings_idx", columnList = "symbol,earnings_date") })
 @Entity
 public class Earning extends BaseEntity {
 

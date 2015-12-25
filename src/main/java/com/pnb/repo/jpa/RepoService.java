@@ -40,9 +40,10 @@ public class RepoService {
         earnReturnRepo.flush();
     }
 
-    @Transactional(value = TxType.REQUIRES_NEW)
-    public void saveAllBuyRecommendation(List<BuyRecommend> buyRecommendations) {
-        buyRecommendRepo.save(buyRecommendations);
+    
+    @Transactional(value = TxType.REQUIRES_NEW)    
+    public void saveBuyRecommendation(BuyRecommend buyRecommendation){
+        buyRecommendRepo.save(buyRecommendation);
         priceRepo.flush();
     }
 

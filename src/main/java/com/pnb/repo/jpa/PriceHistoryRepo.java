@@ -24,5 +24,18 @@ public interface PriceHistoryRepo extends JpaRepository<PriceHistory, Long> {
      */
     @Query(value = "select distinct(symbol) from earning where symbol not in (select distinct(task_sub_type) from task_meta where task_name = 'PRICE_HISTORY' and status = 'ERROR') and symbol not like '%.%' order by symbol asc", nativeQuery = true)
     List<String> getAllSymbolsForPriceHistoryUpdate();
+    
+    
+    /*
+     * 1) All successfully completed PriceData History Load:
+     * select * from task_meta where task_name = 'PRICE_HISTORY' and status = 'COMPLETED' order by created_date desc; 
+     * 
+     * 2) Number of errors:
+     * select count(*) from task_meta where task_name = 'PRICE_HISTORY' and status = 'ERROR' and created_date = '2015-12-25'
+     * 
+     * Errors due to constraint voliation:
+     * select count(*) from task_meta where task_name = 'PRICE_HISTORY' and status = 'ERROR' and created_date = '2015-12-25' and message like '%org.hibernate.exception.ConstraintViolationException%';
+     * 
+     */
 
 }
